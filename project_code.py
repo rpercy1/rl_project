@@ -1,12 +1,11 @@
 import numpy as np
 import pandas as pd
 
-# timestamp
-# position
-# click
-# 80 affinities
-# user - embedded
-all_random = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\project\random\all.csv")
+
+all_random = pd.read_csv(r"C:/Users/percy/OneDrive - University of Tennessee/MSBA/BZAN 583 Reinforcement/random/all.csv")
+#caleb's path
+all_random = pd.read_csv(r"C:/Users/caleb/Downloads/GroupAssignmentRecommender.zip/data/all_random/all.csv")
+
 all_random.head()
 
 ################# Generate Unique Customer Groups ##########################
