@@ -17,9 +17,7 @@ len(all_random.user_feature_1.unique()) #6 options
 len(all_random.user_feature_2.unique()) #10 options
 len(all_random.user_feature_3.unique()) #10 options
 
-all_random.position.unique()
-
-possible_combos = 4*6*10*10 #2400
+#possible_combos = 4*6*10*10 #2400
 
 # test concatenation
 #all_random.iloc[0,6] + " " + all_random.iloc[0,7] + " " + all_random.iloc[0,8] + " " + all_random.iloc[0,9]
@@ -35,5 +33,15 @@ len(x.cat.codes.unique())
 all_random['user'] = x.cat.codes
 all_random['user'].head()
 
+all_random.info()
 
+all_random = all_random[[c for c in all_random if c not in ['click']] + ['click']].head()
 
+def take_action():
+    '''
+    Returns a random row of the dataset in state, reward form
+    '''
+    row = int(np.floor(np.random.uniform(low = 0, high = 1374327+1)))
+    sp = all_random.iloc[row, :-1]
+    r = all_random.iloc[row, -1]
+    return sp, r
