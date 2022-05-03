@@ -3,27 +3,17 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-<<<<<<< HEAD
-#read in the data
-try:
-    all_random = pd.read_csv(r"C:/Users/caleb/Downloads/GroupAssignmentRecommender/data/all_random/all.csv")
-except FileNotFoundError:
-    all_random = pd.read_csv(r"C:/Users/percy/OneDrive - University of Tennessee/MSBA/BZAN 583 Reinforcement/random/all.csv")
-
-=======
 
 #read in the data
 try:
     all_random = pd.read_csv(r"C:/Users/caleb/Downloads/GroupAssignmentRecommender/data/all_random/all.csv")
 except FileNotFoundError:
-    all_random = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\project\random\all.csv")
+    try:
+        all_random = pd.read_csv(r"C:/Users/percy/OneDrive - University of Tennessee/MSBA/BZAN 583 Reinforcement/random/all.csv")
+    except FileNotFoundError:
+        my_path = str(pathlib.Path('__file__').parent.absolute().parent.absolute())
+        all_random = pd.read_csv(os.path.join(my_path, 'Project_Data', 'Random', 'all.csv'), engine='pyarrow', index_col=0)
 
-# my_path = str(pathlib.Path('__file__').parent.absolute().parent.absolute())
-# #all_random = pd.read_csv(os.path.join(my_path, 'Project_Data', 'Random', 'all.csv'), engine='pyarrow', index_col=0)
-# all_random = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\random\all.csv")
-
-
->>>>>>> origin
 all_random.tail()
 
 ################# Generate Unique Customer Groups ##########################
@@ -34,7 +24,6 @@ len(all_random.user_feature_2.unique()) #10 options
 len(all_random.user_feature_3.unique()) #10 options
 
 #possible_combos = 4*6*10*10 #2400
-
 # test concatenation
 #all_random.iloc[0,6] + " " + all_random.iloc[0,7] + " " + all_random.iloc[0,8] + " " + all_random.iloc[0,9]
 
@@ -47,20 +36,16 @@ codes, uniques = pd.factorize(all_random['user'])
 x = all_random['user'].astype('category')
 len(x.cat.codes.unique())
 all_random['user'] = x.cat.codes
-all_random['user'].head()
 
-all_random.info()
-
-<<<<<<< HEAD
 all_random = all_random[[c for c in all_random if c not in ['click']] + ['click']].head()
-=======
-all_random.info()
 
+# all_random['user-item_affinity_77'].unique()
 
-all_random['user-item_affinity_77'].unique()
-all_random['user-item_affinity_45'].unique()
+# all_random['user'].head()
+# all_random['user-item_affinity_77'].unique()
+# all_random['user-item_affinity_45'].unique()
 
-
+#reorder columns for take action function
 all_random = all_random[[c for c in all_random if c not in ['click']] + ['click']].head()
 
 
@@ -97,21 +82,30 @@ def get_action():
 
 
 
-all_random.position.unique()
-len(all_random.item_id.unique())
+# all_random.position.unique()
+# len(all_random.item_id.unique())
 
+# create the X data
+#drop the user features --> combined in user variable
 use_cols = [col for col in all_random.columns if 'user_feature' not in col]
 x = all_random.loc[:, use_cols].copy()
+#drop item_id and the propensity_score
 x.drop(columns=['item_id','propensity_score'], inplace=True)
 x.timestamp = pd.to_datetime(x.timestamp).apply(lambda x: x.value)
 x_num = x.drop(columns=['user'])
 x_usr = x.user
 y = all_random.item_id
 
+# create allowed actions
+# for each product, we are allowed to put it in position 1, 2, or 3
+# the allowed actions do not change based on the state, so the list 
+# is the same independent of the state
 allowed_actions = []
 for _ in range(80):
     allowed_actions.append([0,1,2])
     
+
+############################# DQN ###################################
 inputs_usr = tf.keras.layers.Input(shape=(1,),name = 'in_user') 
 embedding_usr = tf.keras.layers.Embedding(input_dim=404, output_dim=323, input_length=1,name = 'embedding_cat')(inputs_usr)
 embedding_flat_usr = tf.keras.layers.Flatten(name='flatten_cat')(embedding_usr)
@@ -126,7 +120,7 @@ hidden3 = tf.keras.layers.Dense(25, activation="relu")(hidden2)
 q_values = tf.keras.layers.Dense(80, activation="softmax")(hidden3)
 
 model = tf.keras.Model(inputs=[inputs_usr, inputs_num], outputs=[q_values])
-
+#####################################################################
 
 
 
@@ -194,7 +188,6 @@ q_values = q_network.predict(x)
     # if (i % 1000) == 0:
     #     print(i)
 
->>>>>>> origin
 
 def take_action():
     '''
