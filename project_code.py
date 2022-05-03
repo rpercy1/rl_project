@@ -84,6 +84,9 @@ all_random.position.unique()
 len(all_random.item_id.unique())
 all_random.timestamp = pd.to_datetime(all_random.timestamp).apply(lambda x: x.value)
 
+use_cols = [col for col in all_random.columns if 'user_feature' not in col]
+pd.get_dummies(all_random.position)
+
 def prepare_data(row):
     """
     Prepare the data for training
@@ -97,7 +100,9 @@ def prepare_data(row):
     
     return x_num, x_usr, y
 
+
 #x_num, x_usr, y = prepare_data(row)
+
 
 
 # create allowed actions
@@ -117,6 +122,7 @@ def construct_q_network():
     embedding_usr = tf.keras.layers.Embedding(input_dim=404, output_dim=323, input_length=1,name = 'embedding_cat')(inputs_usr)
     embedding_flat_usr = tf.keras.layers.Flatten(name='flatten_cat')(embedding_usr)
 
+
     inputs_num = tf.keras.layers.Input(shape=(83,),name = 'in_num') 
 
     inputs_concat = tf.keras.layers.Concatenate(name = 'concatenation')([embedding_flat_usr, inputs_num])
@@ -127,13 +133,8 @@ def construct_q_network():
     q_values = tf.keras.layers.Dense(80, activation="softmax")(hidden3)
 
     return tf.keras.Model(inputs=[inputs_usr, inputs_num], outputs=[q_values])
+
     
-
-q_network = construct_q_network()
-#####################################################################
-
-
-
 
 
 
