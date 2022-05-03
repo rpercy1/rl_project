@@ -37,6 +37,10 @@ x = all_random['user'].astype('category')
 len(x.cat.codes.unique())
 all_random['user'] = x.cat.codes
 
+all_random = all_random[[c for c in all_random if c not in ['click']] + ['click']].head()
+
+# all_random['user-item_affinity_77'].unique()
+
 # all_random['user'].head()
 # all_random['user-item_affinity_77'].unique()
 # all_random['user-item_affinity_45'].unique()
@@ -45,13 +49,17 @@ all_random['user'] = x.cat.codes
 all_random = all_random[[c for c in all_random if c not in ['click']] + ['click']].head()
 
 
-def take_action():
+def get_action():
     '''
     Returns a random row of the dataset in state, reward form
     '''
     row = int(np.floor(np.random.uniform(low = 0, high = 1374327+1)))
-    sp = all_random.iloc[row, :-1]
-    r = all_random.iloc[row, -1]
+    sp = all_random.iloc[row, :]
+    # update sp user affinities if clicked
+    if all_random.click[row] == 1:
+        affinity = 'user-item_affinity_' + str(all_random.item_id[row])
+        sp[affinity] = all_random[affinity][row] + 1
+    r = all_random.click[row]
     return sp, r
 
 
