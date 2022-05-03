@@ -3,11 +3,19 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
+
+#read in the data
+try:
+    all_random = pd.read_csv(r"C:/Users/caleb/Downloads/GroupAssignmentRecommender/data/all_random/all.csv")
+except FileNotFoundError:
+    all_random = pd.read_csv(r"C:/Users/percy/OneDrive - University of Tennessee/MSBA/BZAN 583 Reinforcement/random/all.csv")
+
 my_path = str(pathlib.Path('__file__').parent.absolute().parent.absolute())
 all_random = pd.read_csv(os.path.join(my_path, 'Project_Data', 'Random', 'all.csv'), engine='pyarrow', index_col=0)
 # all_random = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\random\all.csv")
 
-all_random.head()
+
+all_random.tail()
 
 ################# Generate Unique Customer Groups ##########################
 all_random.info() # 4 user features, use this to group users
@@ -16,7 +24,7 @@ len(all_random.user_feature_1.unique()) #6 options
 len(all_random.user_feature_2.unique()) #10 options
 len(all_random.user_feature_3.unique()) #10 options
 
-possible_combos = 4*6*10*10 #2400
+#possible_combos = 4*6*10*10 #2400
 
 # test concatenation
 #all_random.iloc[0,6] + " " + all_random.iloc[0,7] + " " + all_random.iloc[0,8] + " " + all_random.iloc[0,9]
@@ -32,9 +40,24 @@ len(x.cat.codes.unique())
 all_random['user'] = x.cat.codes
 all_random['user'].head()
 
+
+all_random.info()
+
 all_random['user-item_affinity_77'].unique()
 all_random['user-item_affinity_45'].unique()
 
+
+all_random = all_random[[c for c in all_random if c not in ['click']] + ['click']].head()
+
+
+def take_action():
+    '''
+    Returns a random row of the dataset in state, reward form
+    '''
+    row = int(np.floor(np.random.uniform(low = 0, high = 1374327+1)))
+    sp = all_random.iloc[row, :-1]
+    r = all_random.iloc[row, -1]
+    return sp, r
 
 
 
@@ -152,4 +175,5 @@ q_values = q_network.predict(x)
     
     # if (i % 1000) == 0:
     #     print(i)
+
 
