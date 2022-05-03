@@ -47,7 +47,7 @@ all_random['user-item_affinity_77'].unique()
 all_random['user-item_affinity_45'].unique()
 
 
-all_random = all_random[[c for c in all_random if c not in ['click']] + ['click']].head()
+all_random = all_random[[c for c in all_random if c not in ['click']] + ['click']]
 
 
 def take_action():
@@ -81,14 +81,22 @@ def take_action():
 
 all_random.position.unique()
 len(all_random.item_id.unique())
+all_random.timestamp = pd.to_datetime(all_random.timestamp).apply(lambda x: x.value)
 
-use_cols = [col for col in all_random.columns if 'user_feature' not in col]
-x = all_random.loc[:, use_cols].copy()
-x.drop(columns=['item_id','propensity_score'], inplace=True)
-x.timestamp = pd.to_datetime(x.timestamp).apply(lambda x: x.value)
-x_num = x.drop(columns=['user'])
-x_usr = x.user
-y = all_random.item_id
+def prepare_data():
+    """
+    Prepare the data for training
+    """
+    use_cols = [col for col in all_random.columns if 'user_feature' not in col]
+    x = all_random.loc[:, use_cols].copy()
+    x.drop(columns=['item_id','propensity_score'], inplace=True)
+    x_num = x.drop(columns=['user'])
+    x_usr = x.user
+    y = pd.get_dummies(all_random.item_id)
+    
+    return x_num, x_usr, y
+
+x_num, x_usr, y = prepare_data()
 
 allowed_actions = []
 for _ in range(80):
@@ -150,7 +158,8 @@ q_values = q_network.predict(x)
     # Train
     #Compute loss
     #   make a q-value prediciton using the sp we found above
-    
+    # next_Q_values = model.predict(next_state)
+    # action_batch = tf.one_hot(batch[:,1],nbr_actions)
     ###Compute Q_target
     
     # max_next_Q_values = np.max(next_Q_values,axis=1) #axis = 1 is by row
