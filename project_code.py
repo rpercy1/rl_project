@@ -16,10 +16,10 @@ except FileNotFoundError:
 try:
     all_random = pd.read_csv(r"C:/Users/caleb/Downloads/GroupAssignmentRecommender/data/all_random/all.csv")
 except FileNotFoundError:
-    all_random = pd.read_csv(r"C:/Users/percy/OneDrive - University of Tennessee/MSBA/BZAN 583 Reinforcement/random/all.csv")
+    all_random = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\project\random\all.csv")
 
-my_path = str(pathlib.Path('__file__').parent.absolute().parent.absolute())
-all_random = pd.read_csv(os.path.join(my_path, 'Project_Data', 'Random', 'all.csv'), engine='pyarrow', index_col=0)
+# my_path = str(pathlib.Path('__file__').parent.absolute().parent.absolute())
+# #all_random = pd.read_csv(os.path.join(my_path, 'Project_Data', 'Random', 'all.csv'), engine='pyarrow', index_col=0)
 # all_random = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\random\all.csv")
 
 
@@ -56,6 +56,7 @@ all_random = all_random[[c for c in all_random if c not in ['click']] + ['click'
 =======
 all_random.info()
 
+
 all_random['user-item_affinity_77'].unique()
 all_random['user-item_affinity_45'].unique()
 
@@ -63,13 +64,17 @@ all_random['user-item_affinity_45'].unique()
 all_random = all_random[[c for c in all_random if c not in ['click']] + ['click']].head()
 
 
-def take_action():
+def get_action():
     '''
     Returns a random row of the dataset in state, reward form
     '''
     row = int(np.floor(np.random.uniform(low = 0, high = 1374327+1)))
-    sp = all_random.iloc[row, :-1]
-    r = all_random.iloc[row, -1]
+    sp = all_random.iloc[row, :]
+    # update sp user affinities if clicked
+    if all_random.click[row] == 1:
+        affinity = 'user-item_affinity_' + str(all_random.item_id[row])
+        sp[affinity] = all_random[affinity][row] + 1
+    r = all_random.click[row]
     return sp, r
 
 
