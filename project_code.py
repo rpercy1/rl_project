@@ -48,12 +48,11 @@ all_random = all_random[[c for c in all_random if c not in ['click']] + ['click'
 #reorder columns for take action function
 all_random = all_random[[c for c in all_random if c not in ['click']] + ['click']]
 
-
-def get_action():
+row = int(np.floor(np.random.uniform(low = 0, high = 1374327+1)))
+def get_action(row):
     '''
-    Returns a random row of the dataset in state, reward form
+    Updates user affinity if item was clicked on, records reward
     '''
-    row = int(np.floor(np.random.uniform(low = 0, high = 1374327+1)))
     sp = all_random.iloc[row, :]
     # update sp user affinities if clicked
     if all_random.click[row] == 1:
@@ -85,12 +84,12 @@ all_random.position.unique()
 len(all_random.item_id.unique())
 all_random.timestamp = pd.to_datetime(all_random.timestamp).apply(lambda x: x.value)
 
-def prepare_data():
+def prepare_data(row):
     """
     Prepare the data for training
     """
     use_cols = [col for col in all_random.columns if 'user_feature' not in col]
-    x = all_random.loc[:, use_cols].copy()
+    x = all_random.loc[[row], use_cols].copy()
     x.drop(columns=['item_id','propensity_score'], inplace=True)
     x_num = x.drop(columns=['user'])
     x_usr = x.user
@@ -98,7 +97,7 @@ def prepare_data():
     
     return x_num, x_usr, y
 
-x_num, x_usr, y = prepare_data()
+#x_num, x_usr, y = prepare_data(row)
 
 
 # create allowed actions
@@ -154,13 +153,13 @@ q_network.summary()
 
 q_values = q_network.predict(x)
 
-# nbr_update_steps = 101
+# nbr_update_steps = 100
 # for i in range(nbr_update_steps):
-    # read in row
-       
-    #Select action = item picture chosen
+    # row = int(np.floor(np.random.uniform(low = 0, high = 1374327+1)))
+    # prepare the data  
+        # y= Select action = item picture chosen
 
-    #Take action = reward if any 
+    #get action, reward if any 
         # update the user affinity if necessary
         # sp = this same row with user affinity updated
     
@@ -188,11 +187,7 @@ q_values = q_network.predict(x)
     # gradients = tape.gradient(loss, model.trainable_variables) #tracks impact of tiny change on output (loss)
     # optimizer.apply_gradients(zip(gradients,model.trainable_variables)) #updates weights
     
-    # #set state
-    # s = sp
-    
-    # if (i % 1000) == 0:
-    #     print(i)
+
 
 
 def take_action():
