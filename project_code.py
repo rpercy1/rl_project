@@ -8,12 +8,11 @@ import tensorflow as tf
 try:
     all_random = pd.read_csv(r"C:/Users/caleb/Downloads/GroupAssignmentRecommender/data/all_random/all.csv")
 except FileNotFoundError:
-    all_random = pd.read_csv(r"C:/Users/percy/OneDrive - University of Tennessee/MSBA/BZAN 583 Reinforcement/random/all.csv")
-
-my_path = str(pathlib.Path('__file__').parent.absolute().parent.absolute())
-all_random = pd.read_csv(os.path.join(my_path, 'Project_Data', 'Random', 'all.csv'), engine='pyarrow', index_col=0)
-# all_random = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\random\all.csv")
-
+    try:
+        all_random = pd.read_csv(r"C:/Users/percy/OneDrive - University of Tennessee/MSBA/BZAN 583 Reinforcement/random/all.csv")
+    except FileNotFoundError:
+        my_path = str(pathlib.Path('__file__').parent.absolute().parent.absolute())
+        all_random = pd.read_csv(os.path.join(my_path, 'Project_Data', 'Random', 'all.csv'), engine='pyarrow', index_col=0)
 
 all_random.tail()
 
@@ -25,7 +24,6 @@ len(all_random.user_feature_2.unique()) #10 options
 len(all_random.user_feature_3.unique()) #10 options
 
 #possible_combos = 4*6*10*10 #2400
-
 # test concatenation
 #all_random.iloc[0,6] + " " + all_random.iloc[0,7] + " " + all_random.iloc[0,8] + " " + all_random.iloc[0,9]
 
@@ -38,25 +36,30 @@ codes, uniques = pd.factorize(all_random['user'])
 x = all_random['user'].astype('category')
 len(x.cat.codes.unique())
 all_random['user'] = x.cat.codes
-all_random['user'].head()
 
+all_random = all_random[[c for c in all_random if c not in ['click']] + ['click']].head()
 
-all_random.info()
+# all_random['user-item_affinity_77'].unique()
 
-all_random['user-item_affinity_77'].unique()
-all_random['user-item_affinity_45'].unique()
+# all_random['user'].head()
+# all_random['user-item_affinity_77'].unique()
+# all_random['user-item_affinity_45'].unique()
 
-
+#reorder columns for take action function
 all_random = all_random[[c for c in all_random if c not in ['click']] + ['click']]
 
 
-def take_action():
+def get_action():
     '''
     Returns a random row of the dataset in state, reward form
     '''
     row = int(np.floor(np.random.uniform(low = 0, high = 1374327+1)))
-    sp = all_random.iloc[row, :-1]
-    r = all_random.iloc[row, -1]
+    sp = all_random.iloc[row, :]
+    # update sp user affinities if clicked
+    if all_random.click[row] == 1:
+        affinity = 'user-item_affinity_' + str(all_random.item_id[row])
+        sp[affinity] = all_random[affinity][row] + 1
+    r = all_random.click[row]
     return sp, r
 
 
@@ -78,7 +81,6 @@ def take_action():
 # how fast converges, just get the loss
 
 
-
 all_random.position.unique()
 len(all_random.item_id.unique())
 all_random.timestamp = pd.to_datetime(all_random.timestamp).apply(lambda x: x.value)
@@ -98,10 +100,17 @@ def prepare_data():
 
 x_num, x_usr, y = prepare_data()
 
+
+# create allowed actions
+# for each product, we are allowed to put it in position 1, 2, or 3
+# the allowed actions do not change based on the state, so the list 
+# is the same independent of the state
 allowed_actions = []
 for _ in range(80):
     allowed_actions.append([0,1,2])
     
+
+############################# DQN ###################################
 inputs_usr = tf.keras.layers.Input(shape=(1,),name = 'in_user') 
 embedding_usr = tf.keras.layers.Embedding(input_dim=404, output_dim=323, input_length=1,name = 'embedding_cat')(inputs_usr)
 embedding_flat_usr = tf.keras.layers.Flatten(name='flatten_cat')(embedding_usr)
@@ -116,7 +125,7 @@ hidden3 = tf.keras.layers.Dense(25, activation="relu")(hidden2)
 q_values = tf.keras.layers.Dense(80, activation="softmax")(hidden3)
 
 model = tf.keras.Model(inputs=[inputs_usr, inputs_num], outputs=[q_values])
-
+#####################################################################
 
 
 
@@ -186,3 +195,11 @@ q_values = q_network.predict(x)
     #     print(i)
 
 
+def take_action():
+    '''
+    Returns a random row of the dataset in state, reward form
+    '''
+    row = int(np.floor(np.random.uniform(low = 0, high = 1374327+1)))
+    sp = all_random.iloc[row, :-1]
+    r = all_random.iloc[row, -1]
+    return sp, r
