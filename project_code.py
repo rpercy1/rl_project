@@ -110,91 +110,73 @@ for _ in range(80):
     
 
 ############################# DQN ###################################
-inputs_usr = tf.keras.layers.Input(shape=(1,),name = 'in_user') 
-embedding_usr = tf.keras.layers.Embedding(input_dim=404, output_dim=323, input_length=1,name = 'embedding_cat')(inputs_usr)
-embedding_flat_usr = tf.keras.layers.Flatten(name='flatten_cat')(embedding_usr)
+def construct_q_network():
+    """Construct the q-network with q-values per action as output"""
+    
+    inputs_usr = tf.keras.layers.Input(shape=(1,),name = 'in_user') 
+    embedding_usr = tf.keras.layers.Embedding(input_dim=404, output_dim=323, input_length=1,name = 'embedding_cat')(inputs_usr)
+    embedding_flat_usr = tf.keras.layers.Flatten(name='flatten_cat')(embedding_usr)
 
-inputs_num = tf.keras.layers.Input(shape=(83,),name = 'in_num') 
+    inputs_num = tf.keras.layers.Input(shape=(83,),name = 'in_num') 
 
-inputs_concat = tf.keras.layers.Concatenate(name = 'concatenation')([embedding_flat_usr, inputs_num])
+    inputs_concat = tf.keras.layers.Concatenate(name = 'concatenation')([embedding_flat_usr, inputs_num])
 
-hidden1 = tf.keras.layers.Dense(25, activation="relu")(inputs_concat)
-hidden2 = tf.keras.layers.Dense(25, activation="relu")(hidden1)
-hidden3 = tf.keras.layers.Dense(25, activation="relu")(hidden2)
-q_values = tf.keras.layers.Dense(80, activation="softmax")(hidden3)
+    hidden1 = tf.keras.layers.Dense(25, activation="relu")(inputs_concat)
+    hidden2 = tf.keras.layers.Dense(25, activation="relu")(hidden1)
+    hidden3 = tf.keras.layers.Dense(25, activation="relu")(hidden2)
+    q_values = tf.keras.layers.Dense(80, activation="softmax")(hidden3)
 
-model = tf.keras.Model(inputs=[inputs_usr, inputs_num], outputs=[q_values])
+    return tf.keras.Model(inputs=[inputs_usr, inputs_num], outputs=[q_values])
+    
+
+q_network = construct_q_network()
 #####################################################################
 
 
 
 
-def construct_q_network(state_dim, action_dim):
-    """Construct the q-network with q-values per action as output"""
-    inputs = tf.keras.layers.Input(shape=(state_dim,))  # input dimension
-    hidden1 = tf.keras.layers.Dense(
-        25, activation="relu", kernel_initializer=tf.keras.initializers.he_normal()
-    )(inputs)
-    hidden2 = tf.keras.layers.Dense(
-        25, activation="relu", kernel_initializer=tf.keras.initializers.he_normal()
-    )(hidden1)
-    hidden3 = tf.keras.layers.Dense(
-        25, activation="relu", kernel_initializer=tf.keras.initializers.he_normal()
-    )(hidden2)
-    q_values = tf.keras.layers.Dense(
-        action_dim, kernel_initializer=tf.keras.initializers.Zeros(), activation="linear"
-    )(hidden3)
-
-    return tf.keras.Model(inputs=inputs, outputs=[q_values])
-
-q_network = construct_q_network(4, 80)
-q_network.summary()
 
 
-q_values = q_network.predict(x)
+
 
 # nbr_update_steps = 100
 # for i in range(nbr_update_steps):
-    # row = int(np.floor(np.random.uniform(low = 0, high = 1374327+1)))
-    # prepare the data  
-        # y= Select action = item picture chosen
 
-    #get action, reward if any 
-        # update the user affinity if necessary
-        # sp = this same row with user affinity updated
+# randomly select a row from the data
+row_nbr = int(np.floor(np.random.uniform(low = 0, high = 1374327+1)))
+
+# prepare the data  
+x_num, x_user, y = prepare_data(row_nbr)
+
+
+#get action, update sp if clicked 
+get_action(row_nbr)
+
+# Train
+#Compute loss
+#   make a q-value prediciton using the sp we found above
+# next_Q_values = model.predict(next_state)
+# action_batch = tf.one_hot(batch[:,1],nbr_actions)
+###Compute Q_target
+
+# max_next_Q_values = np.max(next_Q_values,axis=1) #axis = 1 is by row
+# Q_targets = reward + gamma*max_next_Q_values
+###Compute Q, loss, gradients, and updated weights
+# with tf.GradientTape() as tape:
+#     #track gradients in this section, start a context
+#     # make a prediction, look at all trainable variables and comput gradients
+#     #We only want the Q value of the action that was actually taken
+#     #However, the model returns Q values for all actions
+#     #Therefore we need to zero out the ones that we do not want by multiplication with the action_batch matrix.
+#     #We then sum by row to discard all the zeros, keeping only the Q-value of the experienced action.
+#     all_Q_values = model(state_batch)  #same as model.predict but tracks gradients      
+#     Q_values = tf.reduce_sum(all_Q_values * action_batch, axis = 1, keepdims = True) #20x3 all q values, cancel out not-taken actions, sum across rows
+#     loss = loss_fn_1(Q_targets,Q_values)
+#     #loss = tf.reduce_mean(loss_fn_2(Q_targets,Q_values))
+# gradients = tape.gradient(loss, model.trainable_variables) #tracks impact of tiny change on output (loss)
+# optimizer.apply_gradients(zip(gradients,model.trainable_variables)) #updates weights
     
-    # Train
-    #Compute loss
-    #   make a q-value prediciton using the sp we found above
-    # next_Q_values = model.predict(next_state)
-    # action_batch = tf.one_hot(batch[:,1],nbr_actions)
-    ###Compute Q_target
-    
-    # max_next_Q_values = np.max(next_Q_values,axis=1) #axis = 1 is by row
-    # Q_targets = reward + gamma*max_next_Q_values
-    ###Compute Q, loss, gradients, and updated weights
-    # with tf.GradientTape() as tape:
-    #     #track gradients in this section, start a context
-    #     # make a prediction, look at all trainable variables and comput gradients
-    #     #We only want the Q value of the action that was actually taken
-    #     #However, the model returns Q values for all actions
-    #     #Therefore we need to zero out the ones that we do not want by multiplication with the action_batch matrix.
-    #     #We then sum by row to discard all the zeros, keeping only the Q-value of the experienced action.
-    #     all_Q_values = model(state_batch)  #same as model.predict but tracks gradients      
-    #     Q_values = tf.reduce_sum(all_Q_values * action_batch, axis = 1, keepdims = True) #20x3 all q values, cancel out not-taken actions, sum across rows
-    #     loss = loss_fn_1(Q_targets,Q_values)
-    #     #loss = tf.reduce_mean(loss_fn_2(Q_targets,Q_values))
-    # gradients = tape.gradient(loss, model.trainable_variables) #tracks impact of tiny change on output (loss)
-    # optimizer.apply_gradients(zip(gradients,model.trainable_variables)) #updates weights
-    
 
 
 
-def take_action():
-    '''
-    Returns a random row of the dataset in state, reward form
-    '''
-    row = int(np.floor(np.random.uniform(low = 0, high = 1374327+1)))
-    sp = all_random.iloc[row, :-1]
-    r = all_random.iloc[row, -1]
-    return sp, r
+
