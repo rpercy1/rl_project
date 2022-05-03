@@ -84,13 +84,14 @@ def get_action():
 all_random.position.unique()
 len(all_random.item_id.unique())
 all_random.timestamp = pd.to_datetime(all_random.timestamp).apply(lambda x: x.value)
-
-def prepare_data():
+use_cols = [col for col in all_random.columns if 'user_feature' not in col]
+pd.get_dummies(all_random.position)
+def prepare_data(row):
     """
     Prepare the data for training
     """
     use_cols = [col for col in all_random.columns if 'user_feature' not in col]
-    x = all_random.loc[:, use_cols].copy()
+    x = all_random.loc[[row], use_cols].copy()
     x.drop(columns=['item_id','propensity_score'], inplace=True)
     x_num = x.drop(columns=['user'])
     x_usr = x.user
@@ -98,7 +99,7 @@ def prepare_data():
     
     return x_num, x_usr, y
 
-x_num, x_usr, y = prepare_data()
+x_num, x_usr, y = prepare_data(200)
 
 
 # create allowed actions
@@ -111,48 +112,30 @@ for _ in range(80):
     
 
 ############################# DQN ###################################
-inputs_usr = tf.keras.layers.Input(shape=(1,),name = 'in_user') 
-embedding_usr = tf.keras.layers.Embedding(input_dim=404, output_dim=323, input_length=1,name = 'embedding_cat')(inputs_usr)
-embedding_flat_usr = tf.keras.layers.Flatten(name='flatten_cat')(embedding_usr)
-
-inputs_num = tf.keras.layers.Input(shape=(83,),name = 'in_num') 
-
-inputs_concat = tf.keras.layers.Concatenate(name = 'concatenation')([embedding_flat_usr, inputs_num])
-
-hidden1 = tf.keras.layers.Dense(25, activation="relu")(inputs_concat)
-hidden2 = tf.keras.layers.Dense(25, activation="relu")(hidden1)
-hidden3 = tf.keras.layers.Dense(25, activation="relu")(hidden2)
-q_values = tf.keras.layers.Dense(80, activation="softmax")(hidden3)
-
-model = tf.keras.Model(inputs=[inputs_usr, inputs_num], outputs=[q_values])
-#####################################################################
-
-
-
-
-def construct_q_network(state_dim, action_dim):
+def construct_q_network():
     """Construct the q-network with q-values per action as output"""
-    inputs = tf.keras.layers.Input(shape=(state_dim,))  # input dimension
-    hidden1 = tf.keras.layers.Dense(
-        25, activation="relu", kernel_initializer=tf.keras.initializers.he_normal()
-    )(inputs)
-    hidden2 = tf.keras.layers.Dense(
-        25, activation="relu", kernel_initializer=tf.keras.initializers.he_normal()
-    )(hidden1)
-    hidden3 = tf.keras.layers.Dense(
-        25, activation="relu", kernel_initializer=tf.keras.initializers.he_normal()
-    )(hidden2)
-    q_values = tf.keras.layers.Dense(
-        action_dim, kernel_initializer=tf.keras.initializers.Zeros(), activation="linear"
-    )(hidden3)
+    
+    inputs_usr = tf.keras.layers.Input(shape=(1,),name = 'in_user') 
+    embedding_usr = tf.keras.layers.Embedding(input_dim=404, output_dim=323, input_length=1,name = 'embedding_cat')(inputs_usr)
+    embedding_flat_usr = tf.keras.layers.Flatten(name='flatten_cat')(embedding_usr)
 
-    return tf.keras.Model(inputs=inputs, outputs=[q_values])
+    inputs_num = tf.keras.layers.Input(shape=(83,),name = 'in_num') 
 
-q_network = construct_q_network(4, 80)
+    inputs_concat = tf.keras.layers.Concatenate(name = 'concatenation')([embedding_flat_usr, inputs_num])
+
+    hidden1 = tf.keras.layers.Dense(25, activation="relu")(inputs_concat)
+    hidden2 = tf.keras.layers.Dense(25, activation="relu")(hidden1)
+    hidden3 = tf.keras.layers.Dense(25, activation="relu")(hidden2)
+    q_values = tf.keras.layers.Dense(80, activation="softmax")(hidden3)
+
+    return tf.keras.Model(inputs=[inputs_usr, inputs_num], outputs=[q_values])
+    
+
+q_network = construct_q_network()
 q_network.summary()
 
 
-q_values = q_network.predict(x)
+q_values = q_network.predict(x=[x_usr, x_num])
 
 # nbr_update_steps = 101
 # for i in range(nbr_update_steps):
