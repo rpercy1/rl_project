@@ -3,14 +3,6 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-<<<<<<< HEAD
-#read in the data
-try:
-    all_random = pd.read_csv(r"C:/Users/caleb/Downloads/GroupAssignmentRecommender/data/all_random/all.csv")
-except FileNotFoundError:
-    all_random = pd.read_csv(r"C:/Users/percy/OneDrive - University of Tennessee/MSBA/BZAN 583 Reinforcement/random/all.csv")
-
-=======
 
 #read in the data
 try:
@@ -23,7 +15,6 @@ all_random = pd.read_csv(os.path.join(my_path, 'Project_Data', 'Random', 'all.cs
 # all_random = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\random\all.csv")
 
 
->>>>>>> origin
 all_random.tail()
 
 ################# Generate Unique Customer Groups ##########################
@@ -51,9 +42,6 @@ all_random['user'].head()
 
 all_random.info()
 
-<<<<<<< HEAD
-all_random = all_random[[c for c in all_random if c not in ['click']] + ['click']].head()
-=======
 all_random.info()
 
 all_random['user-item_affinity_77'].unique()
@@ -189,7 +177,6 @@ q_values = q_network.predict(x)
     # if (i % 1000) == 0:
     #     print(i)
 
->>>>>>> origin
 
 def take_action():
     '''
