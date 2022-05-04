@@ -83,21 +83,23 @@ all_random.position.unique()
 len(all_random.item_id.unique())
 all_random.timestamp = pd.to_datetime(all_random.timestamp).apply(lambda x: x.value)
 
-use_cols = [col for col in all_random.columns if 'user_feature' not in col]
-pd.get_dummies(all_random.position)
+all_random = pd.concat([all_random,pd.get_dummies(all_random.position,prefix="postion"),
+                        pd.get_dummies(all_random.item_id,prefix="y_item")],axis=1)
+all_random.drop(columns=['position','item_id','propensity_score',
+                         'user_feature_0', 'user_feature_1','user_feature_2',
+                         'user_feature_3'], inplace=True)
 
 def prepare_data(df, row):
     """
     Prepare the data for training
     """
-    use_cols = [col for col in df.columns if 'user_feature' not in col]
-    x = df.loc[[row], use_cols].copy()
-    x.drop(columns=['item_id','propensity_score'], inplace=True)
+    x_cols = [col for col in df.columns if 'y_item' not in col]
+    y_cols = [col for col in df.columns if 'y_item' in col]
+    x = df.loc[[row], x_cols].copy()
     x_num = x.drop(columns=['user'])
     x_usr = x.user
-    y = pd.get_dummies(df.loc[[row], 'user'])
+    y = df.loc[[row], y_cols]
 
-    
     return x_num, x_usr, y
 
 
