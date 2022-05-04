@@ -37,7 +37,6 @@ x = all_random['user'].astype('category')
 len(x.cat.codes.unique())
 all_random['user'] = x.cat.codes
 
-all_random = all_random[[c for c in all_random if c not in ['click']] + ['click']].head()
 
 # all_random['user-item_affinity_77'].unique()
 
@@ -87,21 +86,21 @@ all_random.timestamp = pd.to_datetime(all_random.timestamp).apply(lambda x: x.va
 use_cols = [col for col in all_random.columns if 'user_feature' not in col]
 pd.get_dummies(all_random.position)
 
-def prepare_data(row):
+def prepare_data(df, row):
     """
     Prepare the data for training
     """
-    use_cols = [col for col in all_random.columns if 'user_feature' not in col]
-    x = all_random.loc[[row], use_cols].copy()
+    use_cols = [col for col in df.columns if 'user_feature' not in col]
+    x = df.loc[[row], use_cols].copy()
     x.drop(columns=['item_id','propensity_score'], inplace=True)
     x_num = x.drop(columns=['user'])
     x_usr = x.user
-    y = pd.get_dummies(all_random.item_id)
+    y = pd.get_dummies(df.loc[[row], 'user'])
     
     return x_num, x_usr, y
 
 
-#x_num, x_usr, y = prepare_data(row)
+#x_num, x_usr, y = prepare_data(all_random, 871998)
 
 
 
@@ -147,7 +146,7 @@ def construct_q_network():
 row_nbr = int(np.floor(np.random.uniform(low = 0, high = 1374327+1)))
 
 # prepare the data  
-x_num, x_user, y = prepare_data(row_nbr)
+x_num, x_user, y = prepare_data(all_random, row_nbr)
 
 
 #get action, update sp if clicked 
