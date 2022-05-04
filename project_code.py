@@ -89,6 +89,13 @@ all_random.drop(columns=['position','item_id','propensity_score',
                          'user_feature_0', 'user_feature_1','user_feature_2',
                          'user_feature_3'], inplace=True)
 
+from sklearn.preprocessing import StandardScaler
+from itertools import chain
+
+scaler = StandardScaler()
+x_cols = [col for col in all_random.columns if 'y_item' not in col]
+scaler.fit(all_random[x_cols].drop(columns=['user']))
+
 def prepare_data(df, row):
     """
     Prepare the data for training
@@ -96,13 +103,13 @@ def prepare_data(df, row):
     x_cols = [col for col in df.columns if 'y_item' not in col]
     y_cols = [col for col in df.columns if 'y_item' in col]
     x = df.loc[[row], x_cols].copy()
-    x_num = x.drop(columns=['user'])
+    x_num = scaler.transform(x.drop(columns=['user']))
     x_usr = x.user
     y = df.loc[[row], y_cols]
 
     return x_num, x_usr, y
 
-
+scaler.transform(x1)
 #x_num, x_usr, y = prepare_data(all_random, 871998)
 
 
@@ -129,10 +136,10 @@ def construct_q_network():
 
     inputs_concat = tf.keras.layers.Concatenate(name = 'concatenation')([embedding_flat_usr, inputs_num])
 
-    hidden1 = tf.keras.layers.Dense(25, activation="relu")(inputs_concat)
-    hidden2 = tf.keras.layers.Dense(25, activation="relu")(hidden1)
-    hidden3 = tf.keras.layers.Dense(25, activation="relu")(hidden2)
-    q_values = tf.keras.layers.Dense(80, activation="softmax")(hidden3)
+    hidden1 = tf.keras.layers.Dense(25, activation="elu")(inputs_concat)
+    hidden2 = tf.keras.layers.Dense(25, activation="elu")(hidden1)
+    hidden3 = tf.keras.layers.Dense(25, activation="elu")(hidden2)
+    q_values = tf.keras.layers.Dense(80, activation="linear")(hidden3)
 
     return tf.keras.Model(inputs=[inputs_usr, inputs_num], outputs=[q_values])
 
