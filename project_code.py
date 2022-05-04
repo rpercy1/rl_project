@@ -125,7 +125,7 @@ def construct_q_network():
     embedding_flat_usr = tf.keras.layers.Flatten(name='flatten_cat')(embedding_usr)
 
 
-    inputs_num = tf.keras.layers.Input(shape=(84,),name = 'in_num') 
+    inputs_num = tf.keras.layers.Input(shape=(85,),name = 'in_num') 
 
     inputs_concat = tf.keras.layers.Concatenate(name = 'concatenation')([embedding_flat_usr, inputs_num])
 
