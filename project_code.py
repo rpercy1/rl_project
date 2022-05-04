@@ -4,7 +4,7 @@ import pandas as pd
 import tensorflow as tf
 
 
-#read in the data
+#read in the data for Random
 try:
     all_random = pd.read_csv(r"C:/Users/caleb/Downloads/GroupAssignmentRecommender/data/all_random/all.csv")
 except FileNotFoundError:
@@ -15,6 +15,16 @@ except FileNotFoundError:
         all_random = pd.read_csv(os.path.join(my_path, 'Project_Data', 'Random', 'all.csv'), engine='pyarrow', index_col=0)
 
 all_random.tail()
+
+# read in data for Thompson
+try:
+    all_random = pd.read_csv(r"C:/Users/caleb/Downloads/GroupAssignmentRecommender/data/all_random/all.csv")
+except FileNotFoundError:
+    try:
+        all_random = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\project\random\all.csv")
+    except FileNotFoundError:
+        my_path = str(pathlib.Path('__file__').parent.absolute().parent.absolute())
+        all_random = pd.read_csv(os.path.join(my_path, 'Project_Data', 'Random', 'all.csv'), engine='pyarrow', index_col=0)
 
 ################# Generate Unique Customer Groups ##########################
 all_random.info() # 4 user features, use this to group users
@@ -191,6 +201,4 @@ for i in range(nbr_update_steps):
 
 x1, x2, y = prepare_data(all_random, 844363)
 
-q_network.predict([x2, x1]) # still outputting 1 for q value
-# y  why is y so big? shouldn't it just be 80?
-
+q_network.predict([x2, x1]) 
