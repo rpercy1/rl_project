@@ -38,7 +38,6 @@ len(x.cat.codes.unique())
 all_random['user'] = x.cat.codes
 
 
-
 # all_random['user-item_affinity_77'].unique()
 
 # all_random['user'].head()
@@ -96,12 +95,13 @@ def prepare_data(df, row):
     x.drop(columns=['item_id','propensity_score'], inplace=True)
     x_num = x.drop(columns=['user'])
     x_usr = x.user
-    y = pd.get_dummies(df.item_id)
+    y = pd.get_dummies(df.loc[[row], 'user'])
+
     
     return x_num, x_usr, y
 
 
-#x_num, x_usr, y = prepare_data(row)
+#x_num, x_usr, y = prepare_data(all_random, 871998)
 
 
 
@@ -141,6 +141,7 @@ optimizer = tf.keras.optimizers.Adam(learning_rate = 0.01)
 
 
 gamma = .95
+
 
 nbr_update_steps = 100
 for i in range(nbr_update_steps):
