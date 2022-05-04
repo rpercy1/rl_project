@@ -125,14 +125,14 @@ def construct_q_network():
     embedding_flat_usr = tf.keras.layers.Flatten(name='flatten_cat')(embedding_usr)
 
 
-    inputs_num = tf.keras.layers.Input(shape=(85,),name = 'in_num') 
+    inputs_num = tf.keras.layers.Input(shape=(86,),name = 'in_num') 
 
     inputs_concat = tf.keras.layers.Concatenate(name = 'concatenation')([embedding_flat_usr, inputs_num])
 
     hidden1 = tf.keras.layers.Dense(25, activation="relu")(inputs_concat)
     hidden2 = tf.keras.layers.Dense(25, activation="relu")(hidden1)
     hidden3 = tf.keras.layers.Dense(25, activation="relu")(hidden2)
-    q_values = tf.keras.layers.Dense(80, activation="softmax")(hidden3)
+    q_values = tf.keras.layers.Dense(80, activation="linear")(hidden3)
 
     return tf.keras.Model(inputs=[inputs_usr, inputs_num], outputs=[q_values])
 
@@ -142,7 +142,7 @@ loss_fn_1 = tf.keras.losses.MeanSquaredError(reduction=tf.keras.losses.Reduction
 optimizer = tf.keras.optimizers.Adam(learning_rate = 0.01)
 
 
-gamma = .95
+gamma = .95 #smaller
 
 
 nbr_update_steps = 100
