@@ -41,6 +41,7 @@ len(all_random.user_feature_3.unique()) #10 options
 all_random['user'] = all_random['user_feature_0'] + " " + all_random['user_feature_1'] + " " + all_random['user_feature_2'] + " " + all_random['user_feature_3']
 len(all_random['user'].unique()) # 404 unique customer groups
 
+
 #Discretize
 codes, uniques = pd.factorize(all_random['user']) 
 x = all_random['user'].astype('category')
@@ -62,17 +63,18 @@ def get_action(row):
     '''
     Updates user affinity if item was clicked on, records reward
     '''
-    sp = all_random.loc[[row], :]
+    sp = all_random_new.loc[[row], :]
     # update sp user affinities if clicked
-    if all_random.click[row] == 1:
+    if all_random_new.click[row] == 1:
         affinity = 'user-item_affinity_' + str(all_random.item_id[row])
-        sp[affinity] = all_random[affinity][row] + 1
-    r = all_random.click[row]
+        sp[affinity] = all_random_new[affinity][row] + 1
+    r = all_random_new.click[row]
     return sp, r
 
 get_action(871998)
 all_random.shape
 
+all_random.columns
 
 # questions
 # update what a unique user will see?
@@ -99,6 +101,7 @@ all_random.drop(columns=['position','item_id','propensity_score',
                          'user_feature_0', 'user_feature_1','user_feature_2',
                          'user_feature_3'], inplace=True)
 
+#all_random_new.head()
 from sklearn.preprocessing import StandardScaler
 from itertools import chain
 
@@ -206,6 +209,6 @@ for i in range(nbr_update_steps):
     optimizer.apply_gradients(zip(gradients,q_network.trainable_variables)) #updates weights
     
 
-x1, x2, y = prepare_data(all_random, 844363)
+x1, x2, y = prepare_data(all_random, 362)
 
-q_network.predict([x2, x1]) 
+np.argmax(q_network.predict([x2, x1]) )
