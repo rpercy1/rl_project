@@ -59,16 +59,16 @@ all_random['user'] = x.cat.codes
 all_random = all_random[[c for c in all_random if c not in ['click']] + ['click']]
 
 row = int(np.floor(np.random.uniform(low = 0, high = 1374327+1)))
-def get_action(row):
+def get_action(df, row):
     '''
     Updates user affinity if item was clicked on, records reward
     '''
-    sp = all_random_new.loc[[row], :]
+    sp = df.loc[[row], :]
     # update sp user affinities if clicked
-    if all_random_new.click[row] == 1:
-        affinity = 'user-item_affinity_' + str(all_random.item_id[row])
-        sp[affinity] = all_random_new[affinity][row] + 1
-    r = all_random_new.click[row]
+    if df.click[row] == 1:
+        affinity = 'user-item_affinity_' + str(df.item_id[row])
+        sp[affinity] = df[affinity][row] + 1
+    r = df.click[row]
     return sp, r
 
 get_action(871998)
@@ -212,3 +212,4 @@ for i in range(nbr_update_steps):
 x1, x2, y = prepare_data(all_random, 362)
 
 np.argmax(q_network.predict([x2, x1]) )
+
