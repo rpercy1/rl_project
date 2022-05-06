@@ -16,15 +16,15 @@ except FileNotFoundError:
 
 all_random.tail()
 
-# read in data for Thompson
-try:
-    all_random = pd.read_csv(r"C:/Users/caleb/Downloads/GroupAssignmentRecommender/data/all_random/all.csv")
-except FileNotFoundError:
-    try:
-        all_random = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\project\thompson\all.csv")
-    except FileNotFoundError:
-        my_path = str(pathlib.Path('__file__').parent.absolute().parent.absolute())
-        all_random = pd.read_csv(os.path.join(my_path, 'Project_Data', 'Random', 'all.csv'), engine='pyarrow', index_col=0)
+# # read in data for Thompson
+# try:
+#     all_random = pd.read_csv(r"C:/Users/caleb/Downloads/GroupAssignmentRecommender/data/all_random/all.csv")
+# except FileNotFoundError:
+#     try:
+#         all_random = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\project\thompson\all.csv")
+#     except FileNotFoundError:
+#         my_path = str(pathlib.Path('__file__').parent.absolute().parent.absolute())
+#         all_random = pd.read_csv(os.path.join(my_path, 'Project_Data', 'Random', 'all.csv'), engine='pyarrow', index_col=0)
 
 ################# Generate Unique Customer Groups ##########################
 all_random.info() # 4 user features, use this to group users
@@ -168,7 +168,7 @@ state_q1 = []
 state_q2 = []
 track_x1_num, track_x1_user, track_y1 = prepare_data(all_random, 240)
 track_x2_num, track_x2_user, track_y2 = prepare_data(all_random, 296)
-nbr_update_steps = 100
+nbr_update_steps = 1000
 for i in range(nbr_update_steps):
     
     counter += 1
