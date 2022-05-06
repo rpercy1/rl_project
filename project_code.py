@@ -85,7 +85,7 @@ all_random.timestamp = pd.to_datetime(all_random.timestamp).apply(lambda x: x.va
 
 all_random = pd.concat([all_random,pd.get_dummies(all_random.position,prefix="postion"),
                         pd.get_dummies(all_random.item_id,prefix="y_item")],axis=1)
-all_random.drop(columns=['position','item_id','propensity_score',
+all_random.drop(columns=['position','propensity_score',
                          'user_feature_0', 'user_feature_1','user_feature_2',
                          'user_feature_3'], inplace=True)
 
@@ -94,7 +94,7 @@ from itertools import chain
 
 scaler = StandardScaler()
 x_cols = [col for col in all_random.columns if 'y_item' not in col]
-scaler.fit(all_random[x_cols].drop(columns=['user']))
+scaler.fit(all_random[x_cols].drop(columns=['user','item_id']))
 
 def prepare_data(df, row):
     """
@@ -103,6 +103,7 @@ def prepare_data(df, row):
     x_cols = [col for col in df.columns if 'y_item' not in col]
     y_cols = [col for col in df.columns if 'y_item' in col]
     x = df.loc[[row], x_cols].copy()
+    x = x.drop(columns=['item_id'])
     x_num = scaler.transform(x.drop(columns=['user']))
     x_usr = x.user
     y = df.loc[[row], y_cols]
@@ -150,11 +151,15 @@ optimizer = tf.keras.optimizers.Adam(learning_rate = 0.01)
 
 
 gamma = .95
-
-
+counter = 0
+state_q1 = []
+state_q2 = []
+track_x1_num, track_x1_user, track_y1 = prepare_data(all_random, 240)
+track_x2_num, track_x2_user, track_y2 = prepare_data(all_random, 296)
 nbr_update_steps = 100
 for i in range(nbr_update_steps):
     
+    counter += 1
     # randomly select a row from the data
     row_nbr = int(np.floor(np.random.uniform(low = 0, high = 1374327+1)))
 
@@ -195,9 +200,25 @@ for i in range(nbr_update_steps):
     gradients = tape.gradient(loss, q_network.trainable_variables) #tracks impact of tiny change on output (loss)
     optimizer.apply_gradients(zip(gradients,q_network.trainable_variables)) #updates weights
     
+    
+    if counter % 1 == 0:
+        state_q1.append(q_network.predict([track_x1_user, track_x1_num])[0][60])
+        state_q2.append(q_network.predict([track_x2_user, track_x2_num])[0][60])
+        #print(counter)
 
 x1, x2, y = prepare_data(all_random, 844363)
-
 q_network.predict([x2, x1]) # still outputting 1 for q value
 # y  why is y so big? shouldn't it just be 80?
+np.argmax(q_network.predict([x2, x1]))
 
+# item_track_1 = all_random.loc[240, 'item_id']
+# item_track_2 = all_random.loc[296, 'item_id']
+
+# lst1 = [item[0][item_track_1] for item in state_q1]
+# lst2 = [item[0][item_track_2] for item in state_q2]
+
+import matplotlib.pyplot as plt
+plt.plot(state_q1, label = 'q1')
+plt.plot(state_q2, label = 'q2')
+plt.legend(loc = 'upper left')
+plt.show()
