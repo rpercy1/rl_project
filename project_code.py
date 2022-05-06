@@ -110,7 +110,6 @@ def prepare_data(df, row):
 
     return x_num, x_usr, y
 
-scaler.transform(x1)
 #x_num, x_usr, y = prepare_data(all_random, 871998)
 
 
