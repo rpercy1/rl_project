@@ -21,7 +21,7 @@ try:
     all_random = pd.read_csv(r"C:/Users/caleb/Downloads/GroupAssignmentRecommender/data/all_random/all.csv")
 except FileNotFoundError:
     try:
-        all_random = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\project\random\all.csv")
+        all_random = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\project\thompson\all.csv")
     except FileNotFoundError:
         my_path = str(pathlib.Path('__file__').parent.absolute().parent.absolute())
         all_random = pd.read_csv(os.path.join(my_path, 'Project_Data', 'Random', 'all.csv'), engine='pyarrow', index_col=0)
@@ -119,7 +119,7 @@ def prepare_data(df, row):
 
     return x_num, x_usr, y
 
-scaler.transform(x1)
+#scaler.transform(x1)
 #x_num, x_usr, y = prepare_data(all_random, 871998)
 
 
@@ -146,15 +146,9 @@ def construct_q_network():
 
     inputs_concat = tf.keras.layers.Concatenate(name = 'concatenation')([embedding_flat_usr, inputs_num])
 
-<<<<<<< HEAD
-    hidden1 = tf.keras.layers.Dense(25, activation="relu")(inputs_concat)
-    hidden2 = tf.keras.layers.Dense(25, activation="relu")(hidden1)
-    hidden3 = tf.keras.layers.Dense(25, activation="relu")(hidden2)
-=======
     hidden1 = tf.keras.layers.Dense(25, activation="elu")(inputs_concat)
     hidden2 = tf.keras.layers.Dense(25, activation="elu")(hidden1)
     hidden3 = tf.keras.layers.Dense(25, activation="elu")(hidden2)
->>>>>>> origin/main
     q_values = tf.keras.layers.Dense(80, activation="linear")(hidden3)
 
     return tf.keras.Model(inputs=[inputs_usr, inputs_num], outputs=[q_values])
