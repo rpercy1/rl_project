@@ -169,15 +169,31 @@ target_network.set_weights(q_network.get_weights())
 loss_fn_1 = tf.keras.losses.MeanSquaredError(reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE)
 optimizer = tf.keras.optimizers.Adam(learning_rate = 0.001, clipnorm=.5)
 
-tf.keras.backend.clear_session()
-gamma = .5
-counter = 0
+
+state_q1 = []
+state_q2 = []
+state_q3 = []
+state_q4 = []
+state_q5 = []
+track_x1_num, track_x1_user, track_y1 = prepare_data(all_random, 240)
+track_x2_num, track_x2_user, track_y2 = prepare_data(all_random, 296)
+track_x3_num, track_x3_user, track_y3 = prepare_data(all_random, 50000)
+track_x4_num, track_x4_user, track_y4 = prepare_data(all_random, 500000)
+track_x5_num, track_x5_user, track_y5 = prepare_data(all_random, 1000000)
+nbr_update_steps = 100000
+
+#####
 # state_q1 = []
 # state_q2 = []
 q_values_chosen_state = []
 track_x1_num, track_x1_user, track_y1 = prepare_data(all_random, 240)
 track_x2_num, track_x2_user, track_y2 = prepare_data(all_random, 296)
+
+tf.keras.backend.clear_session()
+gamma = .5
+counter = 0
 nbr_update_steps = 1000
+
 for i in range(nbr_update_steps):
     
     counter += 1
@@ -221,7 +237,13 @@ for i in range(nbr_update_steps):
     gradients = tape.gradient(loss, q_network.trainable_variables) #tracks impact of tiny change on output (loss)
     optimizer.apply_gradients(zip(gradients,q_network.trainable_variables)) #updates weights
     
+    # state_q1.append(q_network.predict([track_x1_user, track_x1_num])[0][60])
+    # state_q2.append(q_network.predict([track_x2_user, track_x2_num])[0][60])
+    # state_q3.append(q_network.predict([track_x3_user, track_x3_num])[0][60])
+    # state_q4.append(q_network.predict([track_x4_user, track_x4_num])[0][60])
+    # state_q5.append(q_network.predict([track_x5_user, track_x5_num])[0][60])
     
+
     if counter % 10 == 0:
         # update target network weights
         target_network.set_weights(q_network.get_weights())
@@ -240,6 +262,7 @@ q_network.predict([x_user, x_num])
 np.argmax(q_network.predict([x_user, x_num]))
 
 
+
 # item_track_1 = all_random.loc[240, 'item_id']
 # item_track_2 = all_random.loc[296, 'item_id']
 
@@ -248,7 +271,46 @@ lst2 = [item[40] for item in q_values_chosen_state]
 lst3 = [item[60] for item in q_values_chosen_state]
 lst4 = [item[79] for item in q_values_chosen_state]
 
+# store list of q_values
+import pickle
+with open('Q_240.data', 'wb') as filehandle:
+    # store the data as binary data stream
+    pickle.dump(state_q1, filehandle)
+with open('Q_296.data', 'wb') as filehandle:
+    # store the data as binary data stream
+    pickle.dump(state_q2, filehandle)
+with open('Q_50000.data', 'wb') as filehandle:
+    # store the data as binary data stream
+    pickle.dump(state_q3, filehandle)
+with open('Q_500000.data', 'wb') as filehandle:
+    # store the data as binary data stream
+    pickle.dump(state_q4, filehandle)
+with open('Q_1000000.data', 'wb') as filehandle:
+    # store the data as binary data stream
+    pickle.dump(state_q5, filehandle)
+    
+# with open('Q_240.data', 'rb') as filehandle:
+#     # read the data as binary data stream
+#     state_q1 = pickle.load(filehandle)
+
+
 import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots()
+ax.plot(state_q1, label = 'State 240')
+ax.plot(state_q2, label = 'State 296')
+ax.plot(state_q3, label = 'State 50,000')
+ax.plot(state_q4, label = 'State 500,000')
+ax.plot(state_q5, label = 'State 1,000,000')
+ax.set_xlabel('Number of Updates', fontweight='bold')
+ax.set_ylabel('Q-Value', fontweight='bold')
+ax.set_title('Q-Value of Item Tracking', fontweight='bold')
+ax.set_yticklabels([0,0.15,0.3,0.45,0.6,0.75,0.9,1])
+ax.legend(loc = 'upper left')
+plt.savefig('q_values.png', bbox_inches='tight')
+fig.show()
+
+######
 # plt.plot(state_q1, label = 'q1')
 # plt.plot(state_q2, label = 'q2')
 plt.plot(lst1, label='q20')
