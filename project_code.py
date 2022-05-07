@@ -180,7 +180,7 @@ track_x2_num, track_x2_user, track_y2 = prepare_data(all_random, 296)
 track_x3_num, track_x3_user, track_y3 = prepare_data(all_random, 50000)
 track_x4_num, track_x4_user, track_y4 = prepare_data(all_random, 500000)
 track_x5_num, track_x5_user, track_y5 = prepare_data(all_random, 1000000)
-nbr_update_steps = 100000
+#nbr_update_steps = 100000
 
 #####
 # state_q1 = []
@@ -192,7 +192,7 @@ track_x2_num, track_x2_user, track_y2 = prepare_data(all_random, 296)
 tf.keras.backend.clear_session()
 gamma = .5
 counter = 0
-nbr_update_steps = 1000
+nbr_update_steps = 20000
 
 for i in range(nbr_update_steps):
     
@@ -244,7 +244,7 @@ for i in range(nbr_update_steps):
     # state_q5.append(q_network.predict([track_x5_user, track_x5_num])[0][60])
     
 
-    if counter % 10 == 0:
+    if counter % 100 == 0:
         # update target network weights
         target_network.set_weights(q_network.get_weights())
         
