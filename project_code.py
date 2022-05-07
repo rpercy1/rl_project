@@ -169,7 +169,7 @@ counter = 0
 q_values_chosen_state = []
 track_x1_num, track_x1_user, track_y1 = prepare_data(all_random, 240)
 track_x2_num, track_x2_user, track_y2 = prepare_data(all_random, 296)
-nbr_update_steps = 80000
+nbr_update_steps = 100000
 for i in range(nbr_update_steps):
     
     counter += 1
