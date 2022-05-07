@@ -162,7 +162,7 @@ def construct_q_network():
 q_network = construct_q_network()  
 
 loss_fn_1 = tf.keras.losses.MeanSquaredError(reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE)
-optimizer = tf.keras.optimizers.Adam(learning_rate = 0.001, clipnorm=1)
+optimizer = tf.keras.optimizers.Adam(learning_rate = 0.001, clipnorm=.5)
 
 
 gamma = .95
