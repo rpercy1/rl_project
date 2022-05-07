@@ -162,11 +162,15 @@ def construct_q_network():
 
 q_network = construct_q_network()  
 
+#Fixed q-value targets
+target_network = tf.keras.models.clone_model(q_network)
+target_network.set_weights(q_network.get_weights())
+
 loss_fn_1 = tf.keras.losses.MeanSquaredError(reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE)
 optimizer = tf.keras.optimizers.Adam(learning_rate = 0.001, clipnorm=.5)
 
-
-gamma = .95
+tf.keras.backend.clear_session()
+gamma = .5
 counter = 0
 # state_q1 = []
 # state_q2 = []
@@ -194,7 +198,7 @@ for i in range(nbr_update_steps):
     
     # Train
     #Compute loss
-    next_Q_values = q_network.predict([x_user_sp, x_num_sp])
+    next_Q_values = target_network.predict([x_user_sp, x_num_sp])
 
     # action_batch = tf.one_hot(batch[:,1],nbr_actions)
     ###Compute Q_target
@@ -219,6 +223,10 @@ for i in range(nbr_update_steps):
     
     
     if counter % 10 == 0:
+        # update target network weights
+        target_network.set_weights(q_network.get_weights())
+        
+        # append q-values for plotting
         q_values_chosen_state.append(q_network.predict([track_x1_user, track_x1_num])[0])
         # state_q1.append(q_network.predict([track_x1_user, track_x1_num])[0][60])
         # state_q2.append(q_network.predict([track_x2_user, track_x2_num])[0][60])
