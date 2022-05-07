@@ -4,7 +4,7 @@ import pandas as pd
 import tensorflow as tf
 
 
-#read in the data
+#read in the data for Random
 try:
     all_random = pd.read_csv(r"C:/Users/caleb/Downloads/GroupAssignmentRecommender/data/all_random/all.csv")
 except FileNotFoundError:
@@ -15,6 +15,16 @@ except FileNotFoundError:
         all_random = pd.read_csv(os.path.join(my_path, 'Project_Data', 'Random', 'all.csv'), engine='pyarrow', index_col=0)
 
 all_random.tail()
+
+# # read in data for Thompson
+# try:
+#     all_random = pd.read_csv(r"C:/Users/caleb/Downloads/GroupAssignmentRecommender/data/all_random/all.csv")
+# except FileNotFoundError:
+#     try:
+#         all_random = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\project\thompson\all.csv")
+#     except FileNotFoundError:
+#         my_path = str(pathlib.Path('__file__').parent.absolute().parent.absolute())
+#         all_random = pd.read_csv(os.path.join(my_path, 'Project_Data', 'Random', 'all.csv'), engine='pyarrow', index_col=0)
 
 ################# Generate Unique Customer Groups ##########################
 all_random.info() # 4 user features, use this to group users
@@ -30,6 +40,7 @@ len(all_random.user_feature_3.unique()) #10 options
 # create new column
 all_random['user'] = all_random['user_feature_0'] + " " + all_random['user_feature_1'] + " " + all_random['user_feature_2'] + " " + all_random['user_feature_3']
 len(all_random['user'].unique()) # 404 unique customer groups
+
 
 #Discretize
 codes, uniques = pd.factorize(all_random['user']) 
@@ -48,21 +59,22 @@ all_random['user'] = x.cat.codes
 all_random = all_random[[c for c in all_random if c not in ['click']] + ['click']]
 
 row = int(np.floor(np.random.uniform(low = 0, high = 1374327+1)))
-def get_action(row):
+def get_action(df, row):
     '''
     Updates user affinity if item was clicked on, records reward
     '''
-    sp = all_random.loc[[row], :]
+    sp = df.loc[[row], :]
     # update sp user affinities if clicked
-    if all_random.click[row] == 1:
-        affinity = 'user-item_affinity_' + str(all_random.item_id[row])
-        sp[affinity] = all_random[affinity][row] + 1
-    r = all_random.click[row]
+    if df.click[row] == 1:
+        affinity = 'user-item_affinity_' + str(df.item_id[row])
+        sp[affinity] = df[affinity][row] + 1
+    r = df.click[row]
     return sp, r
 
-get_action(871998)
+get_action(all_random, 871998)
 all_random.shape
 
+all_random.columns
 
 # questions
 # update what a unique user will see?
@@ -89,6 +101,7 @@ all_random.drop(columns=['position','propensity_score',
                          'user_feature_0', 'user_feature_1','user_feature_2',
                          'user_feature_3'], inplace=True)
 
+#all_random_new.head()
 from sklearn.preprocessing import StandardScaler
 from itertools import chain
 
@@ -132,13 +145,16 @@ def construct_q_network():
     embedding_flat_usr = tf.keras.layers.Flatten(name='flatten_cat')(embedding_usr)
 
 
-    inputs_num = tf.keras.layers.Input(shape=(85,),name = 'in_num') 
+    inputs_num = tf.keras.layers.Input(shape=(86,),name = 'in_num') 
 
     inputs_concat = tf.keras.layers.Concatenate(name = 'concatenation')([embedding_flat_usr, inputs_num])
 
-    hidden1 = tf.keras.layers.Dense(25, activation="elu")(inputs_concat)
-    hidden2 = tf.keras.layers.Dense(25, activation="elu")(hidden1)
-    hidden3 = tf.keras.layers.Dense(25, activation="elu")(hidden2)
+    BNorm1 = tf.keras.layers.BatchNormalization()(inputs_concat)
+    hidden1 = tf.keras.layers.Dense(250, activation="elu")(BNorm1)
+    BNorm2 = tf.keras.layers.BatchNormalization()(hidden1)
+    hidden2 = tf.keras.layers.Dense(200, activation="elu")(BNorm2)
+    BNorm3 = tf.keras.layers.BatchNormalization()(hidden2)
+    hidden3 = tf.keras.layers.Dense(150, activation="elu")(BNorm3)
     q_values = tf.keras.layers.Dense(80, activation="linear")(hidden3)
 
     return tf.keras.Model(inputs=[inputs_usr, inputs_num], outputs=[q_values])
@@ -146,16 +162,17 @@ def construct_q_network():
 q_network = construct_q_network()  
 
 loss_fn_1 = tf.keras.losses.MeanSquaredError(reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE)
-optimizer = tf.keras.optimizers.Adam(learning_rate = 0.01)
+optimizer = tf.keras.optimizers.Adam(learning_rate = 0.001, clipnorm=1)
 
 
 gamma = .95
 counter = 0
-state_q1 = []
-state_q2 = []
+# state_q1 = []
+# state_q2 = []
+q_values_chosen_state = []
 track_x1_num, track_x1_user, track_y1 = prepare_data(all_random, 240)
 track_x2_num, track_x2_user, track_y2 = prepare_data(all_random, 296)
-nbr_update_steps = 100
+nbr_update_steps = 1000
 for i in range(nbr_update_steps):
     
     counter += 1
@@ -167,7 +184,7 @@ for i in range(nbr_update_steps):
     x_user = tf.convert_to_tensor(x_user)
 
     #get action, update sp if clicked 
-    sp,r = get_action(row_nbr)
+    sp,r = get_action(all_random, row_nbr)
     x_num_sp, x_user_sp, y_sp = prepare_data(sp, row_nbr)
 
     x_num.shape
@@ -200,24 +217,30 @@ for i in range(nbr_update_steps):
     optimizer.apply_gradients(zip(gradients,q_network.trainable_variables)) #updates weights
     
     
-    if counter % 1 == 0:
-        state_q1.append(q_network.predict([track_x1_user, track_x1_num])[0][60])
-        state_q2.append(q_network.predict([track_x2_user, track_x2_num])[0][60])
-        #print(counter)
+    if counter % 10 == 0:
+        q_values_chosen_state.append(q_network.predict([track_x1_user, track_x1_num])[0])
+        # state_q1.append(q_network.predict([track_x1_user, track_x1_num])[0][60])
+        # state_q2.append(q_network.predict([track_x2_user, track_x2_num])[0][60])
+        print(counter)
 
-x1, x2, y = prepare_data(all_random, 844363)
-q_network.predict([x2, x1]) # still outputting 1 for q value
-# y  why is y so big? shouldn't it just be 80?
-np.argmax(q_network.predict([x2, x1]))
+# MAKE A RECOMMENDATION
+#np.argmax(q_network.predict([x2, x1]))
+
 
 # item_track_1 = all_random.loc[240, 'item_id']
 # item_track_2 = all_random.loc[296, 'item_id']
 
-# lst1 = [item[0][item_track_1] for item in state_q1]
-# lst2 = [item[0][item_track_2] for item in state_q2]
+lst1 = [item[20] for item in q_values_chosen_state]
+lst2 = [item[40] for item in q_values_chosen_state]
+lst3 = [item[60] for item in q_values_chosen_state]
+lst4 = [item[79] for item in q_values_chosen_state]
 
 import matplotlib.pyplot as plt
-plt.plot(state_q1, label = 'q1')
-plt.plot(state_q2, label = 'q2')
+# plt.plot(state_q1, label = 'q1')
+# plt.plot(state_q2, label = 'q2')
+plt.plot(lst1, label='q20')
+plt.plot(lst2, label='q40')
+plt.plot(lst3, label='q60')
+plt.plot(lst4, label='q79')
 plt.legend(loc = 'upper left')
 plt.show()
