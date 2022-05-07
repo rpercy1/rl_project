@@ -153,9 +153,15 @@ gamma = .95
 counter = 0
 state_q1 = []
 state_q2 = []
+state_q3 = []
+state_q4 = []
+state_q5 = []
 track_x1_num, track_x1_user, track_y1 = prepare_data(all_random, 240)
 track_x2_num, track_x2_user, track_y2 = prepare_data(all_random, 296)
-nbr_update_steps = 100
+track_x3_num, track_x3_user, track_y3 = prepare_data(all_random, 50000)
+track_x4_num, track_x4_user, track_y4 = prepare_data(all_random, 500000)
+track_x5_num, track_x5_user, track_y5 = prepare_data(all_random, 1000000)
+nbr_update_steps = 100000
 for i in range(nbr_update_steps):
     
     counter += 1
@@ -199,11 +205,14 @@ for i in range(nbr_update_steps):
     gradients = tape.gradient(loss, q_network.trainable_variables) #tracks impact of tiny change on output (loss)
     optimizer.apply_gradients(zip(gradients,q_network.trainable_variables)) #updates weights
     
+    state_q1.append(q_network.predict([track_x1_user, track_x1_num])[0][60])
+    state_q2.append(q_network.predict([track_x2_user, track_x2_num])[0][60])
+    state_q3.append(q_network.predict([track_x3_user, track_x3_num])[0][60])
+    state_q4.append(q_network.predict([track_x4_user, track_x4_num])[0][60])
+    state_q5.append(q_network.predict([track_x5_user, track_x5_num])[0][60])
     
-    if counter % 1 == 0:
-        state_q1.append(q_network.predict([track_x1_user, track_x1_num])[0][60])
-        state_q2.append(q_network.predict([track_x2_user, track_x2_num])[0][60])
-        #print(counter)
+    if counter % 1000 == 0:
+        print(counter)
 
 x1, x2, y = prepare_data(all_random, 844363)
 q_network.predict([x2, x1]) # still outputting 1 for q value
@@ -216,8 +225,41 @@ np.argmax(q_network.predict([x2, x1]))
 # lst1 = [item[0][item_track_1] for item in state_q1]
 # lst2 = [item[0][item_track_2] for item in state_q2]
 
+# store list of q_values
+import pickle
+with open('Q_240.data', 'wb') as filehandle:
+    # store the data as binary data stream
+    pickle.dump(state_q1, filehandle)
+with open('Q_296.data', 'wb') as filehandle:
+    # store the data as binary data stream
+    pickle.dump(state_q2, filehandle)
+with open('Q_50000.data', 'wb') as filehandle:
+    # store the data as binary data stream
+    pickle.dump(state_q3, filehandle)
+with open('Q_500000.data', 'wb') as filehandle:
+    # store the data as binary data stream
+    pickle.dump(state_q4, filehandle)
+with open('Q_1000000.data', 'wb') as filehandle:
+    # store the data as binary data stream
+    pickle.dump(state_q5, filehandle)
+    
+# with open('Q_240.data', 'rb') as filehandle:
+#     # read the data as binary data stream
+#     state_q1 = pickle.load(filehandle)
+
+
 import matplotlib.pyplot as plt
-plt.plot(state_q1, label = 'q1')
-plt.plot(state_q2, label = 'q2')
-plt.legend(loc = 'upper left')
-plt.show()
+
+fig, ax = plt.subplots()
+ax.plot(state_q1, label = 'State 240')
+ax.plot(state_q2, label = 'State 296')
+ax.plot(state_q3, label = 'State 50,000')
+ax.plot(state_q4, label = 'State 500,000')
+ax.plot(state_q5, label = 'State 1,000,000')
+ax.set_xlabel('Number of Updates', fontweight='bold')
+ax.set_ylabel('Q-Value', fontweight='bold')
+ax.set_title('Q-Value of Item Tracking', fontweight='bold')
+ax.set_yticklabels([0,0.15,0.3,0.45,0.6,0.75,0.9,1])
+ax.legend(loc = 'upper left')
+plt.savefig('q_values.png', bbox_inches='tight')
+fig.show()
