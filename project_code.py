@@ -149,9 +149,12 @@ def construct_q_network():
 
     inputs_concat = tf.keras.layers.Concatenate(name = 'concatenation')([embedding_flat_usr, inputs_num])
 
-    hidden1 = tf.keras.layers.Dense(25, activation="elu")(inputs_concat)
-    hidden2 = tf.keras.layers.Dense(25, activation="elu")(hidden1)
-    hidden3 = tf.keras.layers.Dense(25, activation="elu")(hidden2)
+    BNorm1 = tf.keras.layers.BatchNormalization()(inputs_concat)
+    hidden1 = tf.keras.layers.Dense(250, activation="elu")(BNorm1)
+    BNorm2 = tf.keras.layers.BatchNormalization()(hidden1)
+    hidden2 = tf.keras.layers.Dense(200, activation="elu")(BNorm2)
+    BNorm3 = tf.keras.layers.BatchNormalization()(hidden2)
+    hidden3 = tf.keras.layers.Dense(150, activation="elu")(BNorm3)
     q_values = tf.keras.layers.Dense(80, activation="linear")(hidden3)
 
     return tf.keras.Model(inputs=[inputs_usr, inputs_num], outputs=[q_values])
@@ -159,7 +162,7 @@ def construct_q_network():
 q_network = construct_q_network()  
 
 loss_fn_1 = tf.keras.losses.MeanSquaredError(reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE)
-optimizer = tf.keras.optimizers.Adam(learning_rate = 0.01)
+optimizer = tf.keras.optimizers.Adam(learning_rate = 0.001, clipnorm=1)
 
 
 gamma = .95
@@ -169,7 +172,7 @@ counter = 0
 q_values_chosen_state = []
 track_x1_num, track_x1_user, track_y1 = prepare_data(all_random, 240)
 track_x2_num, track_x2_user, track_y2 = prepare_data(all_random, 296)
-nbr_update_steps = 100000
+nbr_update_steps = 1000
 for i in range(nbr_update_steps):
     
     counter += 1
@@ -214,11 +217,11 @@ for i in range(nbr_update_steps):
     optimizer.apply_gradients(zip(gradients,q_network.trainable_variables)) #updates weights
     
     
-    if counter % 1000 == 0:
+    if counter % 10 == 0:
         q_values_chosen_state.append(q_network.predict([track_x1_user, track_x1_num])[0])
         # state_q1.append(q_network.predict([track_x1_user, track_x1_num])[0][60])
         # state_q2.append(q_network.predict([track_x2_user, track_x2_num])[0][60])
-        #print(counter)
+        print(counter)
 
 # MAKE A RECOMMENDATION
 #np.argmax(q_network.predict([x2, x1]))
