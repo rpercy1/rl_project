@@ -39,7 +39,7 @@ len(all_random.user_feature_3.unique()) #10 options
 
 # create new column
 all_random['user'] = all_random['user_feature_0'] + " " + all_random['user_feature_1'] + " " + all_random['user_feature_2'] + " " + all_random['user_feature_3']
-len(all_random['user'].unique()) # 404 unique customer groups
+len(all_random['user'].unique()) # 314 unique customer groups
 
 
 #Discretize
@@ -192,7 +192,7 @@ track_x2_num, track_x2_user, track_y2 = prepare_data(all_random, 296)
 tf.keras.backend.clear_session()
 gamma = .5
 counter = 0
-nbr_update_steps = 20000
+nbr_update_steps = 30000
 
 for i in range(nbr_update_steps):
     
