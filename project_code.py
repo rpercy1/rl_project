@@ -9,7 +9,9 @@ try:
     all_random = pd.read_csv(r"C:/Users/caleb/Downloads/GroupAssignmentRecommender/data/all_random/all.csv")
 except FileNotFoundError:
     try:
-        all_random = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\project\random\all.csv")
+        iterator = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\project\thompson\all.csv", chunksize = 1000000, iterator=True)
+        for iter_num, chunk in enumerate(iterator, 1):
+            all_random = chunk
     except FileNotFoundError:
         my_path = str(pathlib.Path('__file__').parent.absolute().parent.absolute())
         all_random = pd.read_csv(os.path.join(my_path, 'Project_Data', 'Random', 'all.csv'), engine='pyarrow', index_col=0)
@@ -270,6 +272,12 @@ lst1 = [item[20] for item in q_values_chosen_state]
 lst2 = [item[40] for item in q_values_chosen_state]
 lst3 = [item[60] for item in q_values_chosen_state]
 lst4 = [item[79] for item in q_values_chosen_state]
+lst5 = [item[10] for item in q_values_chosen_state]
+lst6 = [item[30] for item in q_values_chosen_state]
+lst7 = [item[50] for item in q_values_chosen_state]
+lst8 = [item[70] for item in q_values_chosen_state]
+lst9 = [item[5] for item in q_values_chosen_state]
+lst10 = [item[1] for item in q_values_chosen_state]
 
 # store list of q_values
 import pickle
@@ -319,3 +327,5 @@ plt.plot(lst3, label='q60')
 plt.plot(lst4, label='q79')
 plt.legend(loc = 'upper left')
 plt.show()
+
+
