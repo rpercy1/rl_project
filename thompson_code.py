@@ -9,7 +9,7 @@ try:
     all_random = pd.read_csv(r"C:/Users/caleb/Downloads/GroupAssignmentRecommender/data/all_random/all.csv")
 except FileNotFoundError:
     try:
-        all_random = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\project\random\all.csv")
+        all_random = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\project\thompson\all.csv", nrows = 300000)
     except FileNotFoundError:
         my_path = str(pathlib.Path('__file__').parent.absolute().parent.absolute())
         all_random = pd.read_csv(os.path.join(my_path, 'Project_Data', 'Random', 'all.csv'), engine='pyarrow', index_col=0)
@@ -58,7 +58,7 @@ all_random['user'] = x.cat.codes
 #reorder columns for take action function
 all_random = all_random[[c for c in all_random if c not in ['click']] + ['click']]
 
-row = int(np.floor(np.random.uniform(low = 0, high = 1374327+1)))
+row = int(np.floor(np.random.uniform(low = 0, high = 299999)))
 def get_action(df, row):
     '''
     Updates user affinity if item was clicked on, records reward
@@ -141,7 +141,7 @@ def construct_q_network():
     """Construct the q-network with q-values per action as output"""
     
     inputs_usr = tf.keras.layers.Input(shape=(1,),name = 'in_user') 
-    embedding_usr = tf.keras.layers.Embedding(input_dim=404, output_dim=323, input_length=1,name = 'embedding_cat')(inputs_usr)
+    embedding_usr = tf.keras.layers.Embedding(input_dim=314, output_dim=250, input_length=1,name = 'embedding_cat')(inputs_usr)
     embedding_flat_usr = tf.keras.layers.Flatten(name='flatten_cat')(embedding_usr)
 
 
@@ -198,7 +198,7 @@ for i in range(nbr_update_steps):
     
     counter += 1
     # randomly select a row from the data
-    row_nbr = int(np.floor(np.random.uniform(low = 0, high = 1374327+1)))
+    row_nbr = int(np.floor(np.random.uniform(low = 0, high = 299999+1)))
 
     # prepare the data  
     x_num, x_user, y = prepare_data(all_random, row_nbr)
