@@ -9,7 +9,7 @@ try:
     all_random = pd.read_csv(r"C:/Users/caleb/Downloads/GroupAssignmentRecommender/data/all_random/all.csv")
 except FileNotFoundError:
     try:
-        all_random = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\project\thompson\all.csv", nrows = 300000)
+        all_random = pd.read_csv(r"C:\Users\percy\OneDrive - University of Tennessee\MSBA\BZAN 583 Reinforcement\project\random\all.csv")
     except FileNotFoundError:
         my_path = str(pathlib.Path('__file__').parent.absolute().parent.absolute())
         all_random = pd.read_csv(os.path.join(my_path, 'Project_Data', 'Random', 'all.csv'), engine='pyarrow', index_col=0)
