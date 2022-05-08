@@ -277,23 +277,23 @@ lst8 = [item[70] for item in q_values_chosen_state]
 lst9 = [item[5] for item in q_values_chosen_state]
 lst10 = [item[1] for item in q_values_chosen_state]
 
-# store list of q_values
-import pickle
-with open('Q_240.data', 'wb') as filehandle:
-    # store the data as binary data stream
-    pickle.dump(state_q1, filehandle)
-with open('Q_296.data', 'wb') as filehandle:
-    # store the data as binary data stream
-    pickle.dump(state_q2, filehandle)
-with open('Q_50000.data', 'wb') as filehandle:
-    # store the data as binary data stream
-    pickle.dump(state_q3, filehandle)
-with open('Q_500000.data', 'wb') as filehandle:
-    # store the data as binary data stream
-    pickle.dump(state_q4, filehandle)
-with open('Q_1000000.data', 'wb') as filehandle:
-    # store the data as binary data stream
-    pickle.dump(state_q5, filehandle)
+# # store list of q_values
+# import pickle
+# with open('Q_240.data', 'wb') as filehandle:
+#     # store the data as binary data stream
+#     pickle.dump(state_q1, filehandle)
+# with open('Q_296.data', 'wb') as filehandle:
+#     # store the data as binary data stream
+#     pickle.dump(state_q2, filehandle)
+# with open('Q_50000.data', 'wb') as filehandle:
+#     # store the data as binary data stream
+#     pickle.dump(state_q3, filehandle)
+# with open('Q_500000.data', 'wb') as filehandle:
+#     # store the data as binary data stream
+#     pickle.dump(state_q4, filehandle)
+# with open('Q_1000000.data', 'wb') as filehandle:
+#     # store the data as binary data stream
+#     pickle.dump(state_q5, filehandle)
     
 # with open('Q_240.data', 'rb') as filehandle:
 #     # read the data as binary data stream
@@ -302,28 +302,35 @@ with open('Q_1000000.data', 'wb') as filehandle:
 
 import matplotlib.pyplot as plt
 
-fig, ax = plt.subplots()
-ax.plot(state_q1, label = 'State 240')
-ax.plot(state_q2, label = 'State 296')
-ax.plot(state_q3, label = 'State 50,000')
-ax.plot(state_q4, label = 'State 500,000')
-ax.plot(state_q5, label = 'State 1,000,000')
-ax.set_xlabel('Number of Updates', fontweight='bold')
-ax.set_ylabel('Q-Value', fontweight='bold')
-ax.set_title('Q-Value of Item Tracking', fontweight='bold')
-ax.set_yticklabels([0,0.15,0.3,0.45,0.6,0.75,0.9,1])
-ax.legend(loc = 'upper left')
-plt.savefig('q_values.png', bbox_inches='tight')
-fig.show()
+# fig, ax = plt.subplots()
+# ax.plot(state_q1, label = 'State 240')
+# ax.plot(state_q2, label = 'State 296')
+# ax.plot(state_q3, label = 'State 50,000')
+# ax.plot(state_q4, label = 'State 500,000')
+# ax.plot(state_q5, label = 'State 1,000,000')
+# ax.set_xlabel('Number of Updates', fontweight='bold')
+# ax.set_ylabel('Q-Value', fontweight='bold')
+# ax.set_title('Q-Value of Item Tracking', fontweight='bold')
+# ax.set_yticklabels([0,0.15,0.3,0.45,0.6,0.75,0.9,1])
+# ax.legend(loc = 'upper left')
+# plt.savefig('q_values.png', bbox_inches='tight')
+# fig.show()
 
 ######
-# plt.plot(state_q1, label = 'q1')
-# plt.plot(state_q2, label = 'q2')
+plt.plot(state_q1, label = 'q1')
+plt.plot(state_q2, label = 'q2')
 plt.plot(lst1, label='q20')
 plt.plot(lst2, label='q40')
 plt.plot(lst3, label='q60')
 plt.plot(lst4, label='q79')
-plt.legend(loc = 'upper left')
+plt.plot(lst5, label='q10')
+plt.plot(lst6, label='q30')
+plt.plot(lst7, label='q50')
+plt.plot(lst8, label='q70')
+plt.plot(lst9, label='q5')
+plt.plot(lst10, label='q1')
+# plt.legend(loc = 'upper center')
+plt.title('Q-Values over 20,000 Epochs')
 plt.show()
 
 
