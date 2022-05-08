@@ -192,7 +192,7 @@ track_x2_num, track_x2_user, track_y2 = prepare_data(all_random, 296)
 tf.keras.backend.clear_session()
 gamma = .5
 counter = 0
-nbr_update_steps = 30000
+nbr_update_steps = 50000
 
 for i in range(nbr_update_steps):
     
@@ -323,7 +323,14 @@ plt.plot(lst1, label='q20')
 plt.plot(lst2, label='q40')
 plt.plot(lst3, label='q60')
 plt.plot(lst4, label='q79')
+plt.plot(lst5, label='q20')
+plt.plot(lst6, label='q40')
+plt.plot(lst7, label='q60')
+plt.plot(lst8, label='q79')
+plt.plot(lst9, label='q60')
+plt.plot(lst10, label='q79')
 plt.legend(loc = 'upper left')
+plt.title('Q-Values Across 30,000 Epochs')
 plt.show()
 
 
