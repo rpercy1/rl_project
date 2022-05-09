@@ -137,6 +137,7 @@ for _ in range(80):
     
 
 ############################# DQN ###################################
+tf.keras.backend.clear_session()
 def construct_q_network():
     """Construct the q-network with q-values per action as output"""
     
@@ -189,10 +190,10 @@ q_values_chosen_state = []
 track_x1_num, track_x1_user, track_y1 = prepare_data(all_random, 240)
 track_x2_num, track_x2_user, track_y2 = prepare_data(all_random, 296)
 
-tf.keras.backend.clear_session()
+
 gamma = .5
 counter = 0
-nbr_update_steps = 50000
+nbr_update_steps = 100000
 
 for i in range(nbr_update_steps):
     
@@ -244,7 +245,7 @@ for i in range(nbr_update_steps):
     # state_q5.append(q_network.predict([track_x5_user, track_x5_num])[0][60])
     
 
-    if counter % 100 == 0:
+    if counter % 1000 == 0:
         # update target network weights
         target_network.set_weights(q_network.get_weights())
         
@@ -324,13 +325,15 @@ plt.plot(lst2, label='q40')
 plt.plot(lst3, label='q60')
 plt.plot(lst4, label='q79')
 plt.plot(lst5, label='q20')
-plt.plot(lst6, label='q40')
-plt.plot(lst7, label='q60')
-plt.plot(lst8, label='q79')
-plt.plot(lst9, label='q60')
-plt.plot(lst10, label='q79')
-plt.legend(loc = 'upper left')
-plt.title('Q-Values Across 30,000 Epochs')
+plt.plot(lst6, label='q10')
+plt.plot(lst7, label='q30')
+plt.plot(lst8, label='q50')
+plt.plot(lst9, label='q5')
+plt.plot(lst10, label='q1')
+plt.legend(loc = 'upper right')
+plt.ylabel('Q-Values')
+plt.xlabel('Epochs (in thousands)')
+plt.title('Q-Values Across 100,000 Epochs')
 plt.show()
 
 
