@@ -4,7 +4,7 @@ import pandas as pd
 import tensorflow as tf
 
 
-#read in the data for Random
+#read in the data for Random ***Change for Thompson Policy 
 try:
     all_random = pd.read_csv(r"C:/Users/caleb/Downloads/GroupAssignmentRecommender/data/all_random/all.csv")
 except FileNotFoundError:
@@ -49,16 +49,12 @@ len(x.cat.codes.unique())
 all_random['user'] = x.cat.codes
 
 
-# all_random['user-item_affinity_77'].unique()
-
-# all_random['user'].head()
-# all_random['user-item_affinity_77'].unique()
-# all_random['user-item_affinity_45'].unique()
-
 #reorder columns for take action function
 all_random = all_random[[c for c in all_random if c not in ['click']] + ['click']]
 
 row = int(np.floor(np.random.uniform(low = 0, high = 1374327+1)))
+
+########## Data Prep ##################
 def get_action(df, row):
     '''
     Updates user affinity if item was clicked on, records reward
@@ -73,24 +69,9 @@ def get_action(df, row):
 
 get_action(all_random, 871998)
 all_random.shape
-
 all_random.columns
 
-# questions
-# update what a unique user will see?
-#   affinities are 
-# get state of user before showing something and then show state after and then get next state
-# able to compute what next state is
-# show something, get a reward, update affinity 
-# change the affinity binary if they click
-# use the affintity score
-# inputs are states? what dim
-# computing loss how do we do it without the matrix format
-# item is an action, position is part of the state
-# don't need user groups, just update user affinity
-# how fast converges, just get the loss
-
-
+# Get Date Time, and drop appropriate columns
 all_random.position.unique()
 len(all_random.item_id.unique())
 all_random.timestamp = pd.to_datetime(all_random.timestamp).apply(lambda x: x.value)
@@ -105,6 +86,8 @@ all_random.drop(columns=['position','propensity_score',
 from sklearn.preprocessing import StandardScaler
 from itertools import chain
 
+
+# Scale Data
 scaler = StandardScaler()
 x_cols = [col for col in all_random.columns if 'y_item' not in col]
 scaler.fit(all_random[x_cols].drop(columns=['user','item_id']))
@@ -123,20 +106,9 @@ def prepare_data(df, row):
 
     return x_num, x_usr, y
 
-#x_num, x_usr, y = prepare_data(all_random, 871998)
-
-
-
-# create allowed actions
-# for each product, we are allowed to put it in position 1, 2, or 3
-# the allowed actions do not change based on the state, so the list 
-# is the same independent of the state
-allowed_actions = []
-for _ in range(80):
-    allowed_actions.append([0,1,2])
-    
 
 ############################# DQN ###################################
+tf.keras.backend.clear_session()
 def construct_q_network():
     """Construct the q-network with q-values per action as output"""
     
@@ -169,7 +141,7 @@ target_network.set_weights(q_network.get_weights())
 loss_fn_1 = tf.keras.losses.MeanSquaredError(reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE)
 optimizer = tf.keras.optimizers.Adam(learning_rate = 0.001, clipnorm=.5)
 
-
+# For Plotting
 state_q1 = []
 state_q2 = []
 state_q3 = []
@@ -180,19 +152,14 @@ track_x2_num, track_x2_user, track_y2 = prepare_data(all_random, 296)
 track_x3_num, track_x3_user, track_y3 = prepare_data(all_random, 50000)
 track_x4_num, track_x4_user, track_y4 = prepare_data(all_random, 500000)
 track_x5_num, track_x5_user, track_y5 = prepare_data(all_random, 1000000)
-#nbr_update_steps = 100000
-
-#####
-# state_q1 = []
-# state_q2 = []
 q_values_chosen_state = []
-track_x1_num, track_x1_user, track_y1 = prepare_data(all_random, 240)
-track_x2_num, track_x2_user, track_y2 = prepare_data(all_random, 296)
+# track_x1_num, track_x1_user, track_y1 = prepare_data(all_random, 240)
+# track_x2_num, track_x2_user, track_y2 = prepare_data(all_random, 296)
 
-tf.keras.backend.clear_session()
+
 gamma = .5
 counter = 0
-nbr_update_steps = 20000
+nbr_update_steps = 100000
 
 for i in range(nbr_update_steps):
     
@@ -261,11 +228,7 @@ x_num, x_user, y = prepare_data(all_random, row_nbr)
 q_network.predict([x_user, x_num])
 np.argmax(q_network.predict([x_user, x_num]))
 
-
-
-# item_track_1 = all_random.loc[240, 'item_id']
-# item_track_2 = all_random.loc[296, 'item_id']
-
+# Grab Q-Values for Plotting
 lst1 = [item[20] for item in q_values_chosen_state]
 lst2 = [item[40] for item in q_values_chosen_state]
 lst3 = [item[60] for item in q_values_chosen_state]
@@ -317,8 +280,8 @@ import matplotlib.pyplot as plt
 # fig.show()
 
 ######
-plt.plot(state_q1, label = 'q1')
-plt.plot(state_q2, label = 'q2')
+# plt.plot(state_q1, label = 'q1')
+# plt.plot(state_q2, label = 'q2')
 plt.plot(lst1, label='q20')
 plt.plot(lst2, label='q40')
 plt.plot(lst3, label='q60')
@@ -329,8 +292,8 @@ plt.plot(lst7, label='q50')
 plt.plot(lst8, label='q70')
 plt.plot(lst9, label='q5')
 plt.plot(lst10, label='q1')
-# plt.legend(loc = 'upper center')
-plt.title('Q-Values over 20,000 Epochs')
+plt.legend(loc = 'upper center')
+plt.title('Q-Values over 50,000 Epochs')
 plt.show()
 
 
